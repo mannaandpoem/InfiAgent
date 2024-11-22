@@ -189,7 +189,7 @@ async def main():
             return await process_question(q, model_name, args, table_path)
 
     # 使用 asyncio.gather 分批次处理每个问题，每 10 个保存一次结果
-    for i in range(30, len(extracted_data), 10):
+    for i in range(120, len(extracted_data), 10):
         tasks = [limited_process_question(q) for q in extracted_data[i:i + 10]]
         batch_results = await asyncio.gather(*tasks)
         results.extend(batch_results)
