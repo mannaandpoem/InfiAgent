@@ -166,7 +166,7 @@ async def main():
 
     i = 1
     # for q in extracted_data[30:100]:
-    for q in extracted_data[60:100]:
+    for q in extracted_data[60:]:
         input_text = q['question']
         concepts = q['concepts']
         file_path = q['file_name']
