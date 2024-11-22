@@ -53,9 +53,9 @@ class OpenAIGPTClient(BaseLLM, ABC):
                 # n=self.params['n'],
                 engine=self.model_name,
                 messages=[{"role": "user", "content": prompt}],
-                temperature=self.params['temperature'],
-                max_tokens=self.params['max_tokens'],
-                top_p=self.params['top_p'],
+                temperature=self.params.temperature,
+                max_tokens=self.params.max_tokens,
+                top_p=self.params.top_p,
                 # frequency_penalty=self.params.frequency_penalty,
                 # presence_penalty=self.params.presence_penalty,
                 **kwargs
@@ -81,23 +81,25 @@ class OpenAIGPTClient(BaseLLM, ABC):
 
         """
         try:
-            response = await openai.ChatCompletion.acreate(
-                model=self.model_name,
-                messages=[{"role": "user", "content": prompt}],
-                temperature=self.params['temperature'],
-                max_tokens=self.params['max_tokens'],
-                top_p=self.params['top_p'],
-                # frequency_penalty=self.params.frequency_penalty,
-                # presence_penalty=self.params.presence_penalty,
+            all_params = {
+                "model": self.model_name,
+                "messages": [{"role": "user", "content": prompt}],
+                "temperature": self.params.temperature,
+                "max_tokens": self.params.max_tokens,
+                "top_p": self.params.top_p,
+                # "frequency_penalty": self.params['frequency_penalty'],
+                # "presence_penalty": self.params['presence_penalty'],
                 **kwargs
-            )
+            }
+            # print(f"all_params: \n{all_params}")
+            response = await openai.ChatCompletion.acreate(**all_params)
             return BaseCompletion(state="success",
                                   content=response.choices[0].message["content"],
                                   prompt_token=response.get("usage", {}).get("prompt_tokens", 0),
                                   completion_token=response.get("usage", {}).get("completion_tokens", 0))
         except Exception as exception:
             print("Exception:", exception)
-            return BaseCompletion(state="error", content=exception)
+            return BaseCompletion(state="error", content=str(exception))
 
 
     def chat_completion(self, message: List[dict]) -> ChatCompletion:

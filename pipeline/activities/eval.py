@@ -52,7 +52,9 @@ def _get_script_params():
         parser.add_argument('--api_key',
                             help='Open API token key.',
                             required=False, type=str)
-
+        parser.add_argument('--api_base',
+                            help="Base URL for the API",
+                            required=False, type=str)
         parser.add_argument('--config_path',
                             help='Config path for demo',
                             default="configs/agent_configs/react_agent_llama_async.yaml",
@@ -127,21 +129,30 @@ def extract_data_from_folder(folder_path):
 
 
 async def main():
-    extracted_data = read_dicts_from_file('./data/da-dev-questions.jsonl')
+    extracted_data = read_dicts_from_file('../examples/DA-Agent/data/da-dev-questions.jsonl')
     args = _get_script_params()
 
     model_name = getattr(args, "llm", None)
     open_ai_key = getattr(args, "api_key", None)
+    open_ai_url = getattr(args, "api_base", None)
 
+    print(f"model_name: {model_name}")
+    print(f"open_ai_key: {open_ai_key}")
+    print(f"open_ai_url: {open_ai_url}")
     if "OPEN_AI" in model_name:
         logger.info("setup open ai ")
-        if os.environ.get("OPENAI_API_KEY") is None:
-            if open_ai_key:
-                openai.api_key = open_ai_key
-                os.environ["OPENAI_API_KEY"] = open_ai_key
-            else:
-                raise ValueError("OPENAI_API_KEY is None, please provide open ai key to use open ai model. Adding "
-                                 "'--api_key' to set it up")
+        if open_ai_key:
+            openai.api_key = open_ai_key
+            os.environ["OPENAI_API_KEY"] = open_ai_key
+        else:
+            raise ValueError(
+                "OPENAI_API_KEY is None, please provide opekn ai key to use open ai model. Adding '--api_key' to set it up")
+        if open_ai_url:
+            openai.api_base = open_ai_url
+            os.environ["OPENAI_API_BASE"] = open_ai_url
+        else:
+            raise ValueError(
+                "OPENAI_API_BASE is None, please provide opekn ai key to use open ai model. Adding '--api_key' to set it up")
 
         # 获取 'openai' 的 logger
         openai_logger = logging.getLogger('openai')
@@ -150,11 +161,12 @@ async def main():
     else:
         logger.info("use local model ")
 
-    table_path = 'data/da-dev-tables'
+    table_path = '../examples/DA-Agent/data/da-dev-tables'
     results = []
 
     i = 1
-    for q in extracted_data:
+    # for q in extracted_data[30:100]:
+    for q in extracted_data[60:100]:
         input_text = q['question']
         concepts = q['concepts']
         file_path = q['file_name']

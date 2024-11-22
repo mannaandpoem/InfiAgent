@@ -30,6 +30,9 @@ def _get_script_params():
         parser.add_argument('--api_key',
                             help='Open API token key.',
                             required=False, type=str)
+        parser.add_argument('--api_base',
+                            help="Base URL for the API",
+                            required=False, type=str)
         parser.add_argument('--config_path',
                             help='Config path for demo',
                             # default="configs/agent_configs/react_agent_gpt4_async.yaml",
@@ -49,17 +52,23 @@ async def main():
 
     model_name = getattr(args, "llm", None)
     open_ai_key = getattr(args, "api_key", None)
+    open_ai_url = getattr(args, "api_base", None)
     config_path = getattr(args, "config_path", None)
 
     if "OPEN_AI" in model_name:
         logger.info("setup open ai ")
-        if os.environ.get("OPENAI_API_KEY") is None:
-            if open_ai_key:
-                openai.api_key = open_ai_key
-                os.environ["OPENAI_API_KEY"] = open_ai_key
-            else:
-                raise ValueError(
-                    "OPENAI_API_KEY is None, please provide opekn ai key to use open ai model. Adding '--api_key' to set it up")
+        if open_ai_key:
+            openai.api_key = open_ai_key
+            os.environ["OPENAI_API_KEY"] = open_ai_key
+        else:
+            raise ValueError(
+                "OPENAI_API_KEY is None, please provide opekn ai key to use open ai model. Adding '--api_key' to set it up")
+        if open_ai_url:
+            openai.api_base = open_ai_url
+            os.environ["OPENAI_API_BASE"] = open_ai_url
+        else:
+            raise ValueError(
+                "OPENAI_API_BASE is None, please provide opekn ai key to use open ai model. Adding '--api_key' to set it up")
 
         # 获取 'openai' 的 logger
         openai_logger = logging.getLogger('openai')
@@ -106,3 +115,13 @@ async def main():
 
 if __name__ == "__main__":
     asyncio.run(main())
+
+
+"""
+cd pipeline
+python activities/eval.py --llm OPEN_AI --api_key sk-Lrsfjscw7MAAEVHM515a50F071C344Af9f9a5cAfFf6619Ac --config_path configs/agent_configs/react_agent_deepseek-chat_async.yaml --api_base https://oneapi.deepwisdom.ai/v1
+python activities/eval_2.py --llm OPEN_AI --api_key sk-Lrsfjscw7MAAEVHM515a50F071C344Af9f9a5cAfFf6619Ac --config_path configs/agent_configs/react_agent_deepseek-chat_async.yaml --api_base https://oneapi.deepwisdom.ai/v1
+python activities/eval_3.py --llm OPEN_AI --api_key sk-Lrsfjscw7MAAEVHM515a50F071C344Af9f9a5cAfFf6619Ac --config_path configs/agent_configs/react_agent_deepseek-chat_async.yaml --api_base https://oneapi.deepwisdom.ai/v1
+python activities/eval_p.py --llm OPEN_AI --api_key sk-Lrsfjscw7MAAEVHM515a50F071C344Af9f9a5cAfFf6619Ac --config_path configs/agent_configs/react_agent_deepseek-chat_async.yaml --api_base https://oneapi.deepwisdom.ai/v1
+
+"""
